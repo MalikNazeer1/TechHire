@@ -1,0 +1,48 @@
+Integration Evidence Run: evidence_1777814903564
+Base URL: http://localhost:3002
+Date: 2026-05-03
+================================================================================
+IT-01 | PASS
+status=400
+body={"error":"Maximum 5 slots allowed"}
+--------------------------------------------------------------------------------
+IT-02 | PASS
+status=400
+body={"error":"This slot already exists"}
+--------------------------------------------------------------------------------
+IT-03 | PASS
+status=400
+body={"error":"Slot is already available"}
+--------------------------------------------------------------------------------
+IT-04 | PASS
+status=200
+body={"highSkillEmail":"evidence_1777814903564_interviewer@test.local","lowSkillEmail":"evidence_1777814903564_low@test.local","highScore":83,"lowScore":40}
+--------------------------------------------------------------------------------
+IT-05 | PASS
+status=200
+body={"responseSuccess":true,"interviewStatus":"SCHEDULED","interviewerEmail":"evidence_1777814903564_interviewer@test.local","slotStatus":"booked"}
+--------------------------------------------------------------------------------
+IT-06 | PASS
+status=201
+body={"totalInterviews":3,"statuses":["PENDING","PENDING","PENDING"]}
+--------------------------------------------------------------------------------
+IT-07 | PASS
+status=400
+body={"error":"Required columns missing"}
+note=matched expected behavior
+--------------------------------------------------------------------------------
+IT-08 | PASS
+status=200
+body={"feedbackId":25,"interviewStatus":"COMPLETED"}
+--------------------------------------------------------------------------------
+IT-09 | PASS
+status=200
+elapsedMs=365
+body={"output":"hello\n[object Object]"}
+note=output contains hello and completed within 10 seconds
+--------------------------------------------------------------------------------
+IT-10 | PASS
+status=200
+body={"hasProfile":false,"role":null}
+--------------------------------------------------------------------------------
+TOTAL: 10/10 passing

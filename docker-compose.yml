@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  piston:
+    image: ghcr.io/engineer-man/piston:latest
+    ports:
+      - "2000:2000"
+    volumes:
+      - piston-data:/piston
+    tmpfs:
+      - /tmp
+      - /isolate
+      - /var/tmp
+    privileged: true
+    environment:
+      - LOG_LEVEL=INFO
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2000/api/v2/runtimes"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  piston-data:

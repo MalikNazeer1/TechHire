@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+   url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id              String   @id 
+  email           String   @unique
+  name            String
+  role            String?             
+  createdAt       DateTime @default(now())
+  isActive        Boolean  @default(true)
+  supportedLinks  String?
+  lastSignIn      DateTime @default(now())
+  avatar          String? // 👈 URL to the avatar image
+  
+  // Relations
+  interviewer         Interviewer?
+  interviewee         Interviewee?
+  company            Company?
+  notifications      Notification[]
+  conductedInterviews Interview[] @relation("InterviewerInterviews")
+}
+
+
+model Company {
+  id            Int               @id @default(autoincrement())
+  userId        String              @unique
+  description   String
+  industry      String
+  email         String
+  createdAt     DateTime         @default(now())
+  portfolio     String?
+  verified      Boolean          @default(false)
+  companySize   Int
+  name          String            
+  user          User             @relation(fields: [userId], references: [id])
+  jobDescriptions JobDescription[]
+}
+
+model Interviewer {
+  id              Int               @id @default(autoincrement())
+  userId          String              @unique
+  description   String
+  expertiseArea   String
+  level           Int
+  availableSlots  Json
+  hourlyRate      Float
+  totalInterviews Int              @default(0)
+  avgRating       Float            @default(0)
+  resume          String?
+  skills          String[]
+  isVerified        Boolean          @default(true)
+  
+  user            User             @relation(fields: [userId], references: [id])
+}
+
+model Interviewee {
+  id               Int               @id @default(autoincrement())
+  userId           String              @unique
+  currentPosition  String
+  experienceLevel  String
+  registeredAt     DateTime         @default(now())
+  resume           String?
+  skills           String[]
+  
+  user             User             @relation(fields: [userId], references: [id])
+}
+
+model JobDescription {
+  id              Int               @id @default(autoincrement())
+  companyId       Int
+  title           String
+  description     String           @db.Text
+  skills          Json
+  questions       Json
+  experienceLevel String
+  isActive        Boolean          @default(true)
+  postedAt        DateTime         @default(now())
+  candidates      Json
+  
+  company         Company          @relation(fields: [companyId], references: [id])
+  interviews      Interview[]
+}
+
+model Interview {
+  id                Int       @id @default(autoincrement())
+  jobId            Int
+  interviewerEmail String
+  intervieweeEmail String
+  scheduledAt      DateTime
+  durationInMinutes Int
+  status           String
+  meetingLink      String
+  
+  jobDescription   JobDescription @relation(fields: [jobId], references: [id])
+  interviewer      User          @relation("InterviewerInterviews", fields: [interviewerEmail], references: [email])
+  
+  codeSubmissions  CodeSubmission[]
+  aiEvaluations    AIEvaluation[]
+  feedbacks        InterviewFeedback[]
+}
+
+model CodeSubmission {
+  id              Int               @id @default(autoincrement())
+  interviewId     Int
+  language        String
+  codeContent     String           @db.Text
+  executionResult String
+  submittedAt     DateTime         @default(now())
+  
+  interview       Interview        @relation(fields: [interviewId], references: [id])
+}
+
+model AIEvaluation {
+  id                Int               @id @default(autoincrement())
+  interviewId       Int
+  confidenceScore   Float
+  communicationScore Float
+  sentimentAnalysis String           @db.Text
+  generatedAt       DateTime         @default(now())
+  
+  interview         Interview        @relation(fields: [interviewId], references: [id])
+}
+
+// Simplified schema directly matching the sample report structure
+
+model InterviewFeedback {
+  id                  Int               @id @default(autoincrement())
+  interviewId         Int
+  
+  // Basic interview information
+  candidateInfo       Json              // Stores position, interviewer, date, duration, round
+  
+  // Final decision - directly from the report
+  hiringDecision      HiringDecision
+  
+  // Technical Skills Assessment - scores for each skill area
+  // Example: { "HTML/CSS": 7, "JavaScript": 4, "React (Core)": 3, "React (Advanced)": 2 }
+  technicalSkills     Json
+  
+  // Interview Questions by category
+  // Example: [
+  //   { 
+  //     "category": "HTML/CSS", 
+  //     "questions": ["Flex fundamentals covering ordering and size", "HTML semantics, forms, margins, padding"]
+  //   },
+  //   ...
+  // ]
+  interviewQuestions  Json
+  
+  // Detailed Assessment with strengths and areas for improvement
+  // Example: [
+  //   {
+  //     "category": "HTML/CSS",
+  //     "score": 7,
+  //     "rating": "Strong no",
+  //     "description": "HTML/CSS basic and advanced concepts (7/10) - Strong no",
+  //     "strengths": ["Pankaj correctly recommended adding the order property..."],
+  //     "areasForImprovement": ["Pankaj was comfortable answering the HTML/CSS questions..."]
+  //   },
+  //   ...
+  // ]
+  detailedAssessment  Json
+  
+  // Average score calculated from all technical skill scores
+  averageScore        Float
+  
+  createdAt           DateTime         @default(now())
+  
+  interview           Interview        @relation(fields: [interviewId], references: [id])
+}
+
+enum HiringDecision {
+  STRONG_YES
+  YES
+  NO
+  STRONG_NO
+}
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  type      String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model ContactFormResponse {
+  id            Int      @id @default(autoincrement())
+  fullName      String
+  workEmail     String   @unique
+  phoneNumber   String
+  companyName   String
+  jobTitle      String
+  companySize   Int
+  messageForUs  String   @db.Text
+  createdAt     DateTime @default(now())
+}
+
